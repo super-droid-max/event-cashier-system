@@ -66,7 +66,7 @@ export function printReceipt(transaction: Transaction) {
 </head>
 <body>
   <div class="center">
-    <div class="title">KASIR GATHERING</div>
+    <div class="title">KASIR</div>
     <div class="muted">POS Event</div>
     <div class="muted">${escapeHtml(transaction.id)}</div>
     <div class="muted">${escapeHtml(formatDateTime(transaction.createdAt))}</div>
