@@ -34,9 +34,9 @@ export function verifySession(value?: string | null): Session | null {
 
 export function authenticate(username: string, password: string): Role | null {
   const adminUser = process.env.ADMIN_USERNAME || "admin"
-  const adminPass = process.env.ADMIN_PASSWORD || "admin123"
+  const adminPass = process.env.ADMIN_PASSWORD || "super88"
   const cashierUser = process.env.CASHIER_USERNAME || "kasir"
-  const cashierPass = process.env.CASHIER_PASSWORD || "kasir123"
+  const cashierPass = process.env.CASHIER_PASSWORD || "super888"
   if (username === adminUser && password === adminPass) return "admin"
   if (username === cashierUser && password === cashierPass) return "kasir"
   return null
