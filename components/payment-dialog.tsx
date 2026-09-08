@@ -4,6 +4,7 @@ import { Banknote, Check, QrCode, Upload } from "lucide-react"
 import { useRef, useState } from "react"
 import { Button, Field, Modal, TextInput } from "@/components/ui-kit"
 import { formatRupiah } from "@/lib/format"
+import { printReceipt } from "@/lib/print-receipt"
 import { fileToCompressedDataUrl } from "@/lib/image"
 import { useStore } from "@/lib/store"
 import type { PaymentMethod, Transaction } from "@/lib/types"
@@ -85,9 +86,19 @@ export function PaymentDialog({ open, onClose }: { open: boolean; onClose: () =>
           </div>
         </div>
         <div className="mt-4">
-          <Button className="w-full" size="lg" onClick={handleClose}>
-            Transaksi Baru
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              size="lg"
+              onClick={() => printReceipt(done)}
+            >
+              Print Struk
+            </Button>
+            <Button className="flex-1" size="lg" onClick={handleClose}>
+              Transaksi Baru
+            </Button>
+          </div>
         </div>
       </Modal>
     )

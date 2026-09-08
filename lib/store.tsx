@@ -260,7 +260,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return tx
     },
 
-    deleteTransaction: (id) => setTransactions((prev) => prev.filter((t) => t.id !== id)),
+    deleteTransaction: (id) => {
+      const transaction = transactions.find((t) => t.id === id)
+      if (!transaction) return
+
+      // Restore the sold quantity back to stock before removing the transaction.
+      // If a product was deleted after the sale, there is no product record to restore.
+      setProducts((prev) =>
+        prev.map((p) => {
+          const sold = transaction.items.find((i) => i.productId === p.id)
+          return sold ? { ...p, stock: p.stock + sold.quantity } : p
+        }),
+      )
+      setTransactions((prev) => prev.filter((t) => t.id !== id))
+    },
     clearTransactions: () => setTransactions([]),
   }
 

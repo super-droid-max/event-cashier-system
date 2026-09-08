@@ -1,18 +1,19 @@
 "use client"
 
-import { Banknote, Download, QrCode, Receipt, Search } from "lucide-react"
+import { Banknote, Download, Printer, QrCode, Receipt, Search, Trash2 } from "lucide-react"
 import { useMemo, useState } from "react"
 import { Badge, Modal, TextInput } from "@/components/ui-kit"
 import { formatDateTime, formatRupiah } from "@/lib/format"
 import { useStore } from "@/lib/store"
 import type { PaymentMethod, Transaction } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { printReceipt } from "@/lib/print-receipt"
 import * as XLSX from "xlsx"
 
 type MethodFilter = "ALL" | PaymentMethod
 
 export function TransactionsSection() {
-  const { transactions } = useStore()
+  const { transactions, deleteTransaction } = useStore()
   const [query, setQuery] = useState("")
   const [method, setMethod] = useState<MethodFilter>("ALL")
   const [date, setDate] = useState("")
@@ -149,10 +150,10 @@ export function TransactionsSection() {
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((t) => (
-              <li key={t.id}>
+              <li key={t.id} className="flex items-stretch gap-2">
                 <button
                   onClick={() => setDetail(t)}
-                  className="flex w-full items-center gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-primary/40 hover:bg-primary/5"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card p-3 text-left hover:border-primary/40 hover:bg-primary/5"
                 >
                   <div
                     className={cn(
@@ -188,6 +189,20 @@ export function TransactionsSection() {
                     </Badge>
                   </div>
                 </button>
+                <button
+                  type="button"
+                  title={`Hapus ${t.id}`}
+                  aria-label={`Hapus transaksi ${t.id}`}
+                  onClick={() => {
+                    if (window.confirm(`Hapus transaksi ${t.id}? Stok produk akan dikembalikan sesuai jumlah yang terjual.`)) {
+                      deleteTransaction(t.id)
+                      if (detail?.id === t.id) setDetail(null)
+                    }
+                  }}
+                  className="inline-flex w-11 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </li>
             ))}
           </ul>
@@ -199,6 +214,33 @@ export function TransactionsSection() {
         onClose={() => setDetail(null)}
         title={detail?.id ?? "Detail"}
         wide
+        footer={
+          detail ? (
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Hapus transaksi ${detail.id}? Stok produk akan dikembalikan sesuai jumlah yang terjual.`)) {
+                    deleteTransaction(detail.id)
+                    setDetail(null)
+                  }
+                }}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-destructive px-4 text-sm font-medium text-white hover:bg-destructive/90"
+              >
+                <Trash2 className="h-4 w-4" />
+                Hapus Transaksi
+              </button>
+              <button
+                type="button"
+                onClick={() => printReceipt(detail)}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                <Printer className="h-4 w-4" />
+                Print Struk
+              </button>
+            </div>
+          ) : null
+        }
       >
         {detail ? (
           <div className="flex flex-col gap-4">
