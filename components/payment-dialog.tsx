@@ -19,6 +19,7 @@ export function PaymentDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [proof, setProof] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [done, setDone] = useState<Transaction | null>(null)
+  const [error, setError] = useState("")
   const fileRef = useRef<HTMLInputElement>(null)
 
   const receivedNum = Number(received) || 0
@@ -52,12 +53,17 @@ export function PaymentDialog({ open, onClose }: { open: boolean; onClose: () =>
   }
 
   function handleConfirm() {
-    const tx = checkout({
-      paymentMethod: method,
-      amountReceived: method === "CASH" ? receivedNum : null,
-      paymentProof: method === "QRIS" ? proof : null,
-    })
-    setDone(tx)
+    setError("")
+    try {
+      const tx = checkout({
+        paymentMethod: method,
+        amountReceived: method === "CASH" ? receivedNum : null,
+        paymentProof: method === "QRIS" ? proof : null,
+      })
+      setDone(tx)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Transaksi gagal. Silakan cek stok dan coba lagi.")
+    }
   }
 
   // Success / receipt view
@@ -125,6 +131,8 @@ export function PaymentDialog({ open, onClose }: { open: boolean; onClose: () =>
         </div>
       }
     >
+      {error ? <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div> : null}
+
       <div className="mb-4 rounded-lg bg-primary px-4 py-3 text-primary-foreground">
         <p className="text-xs uppercase tracking-wide opacity-80">Total Tagihan</p>
         <p className="font-mono text-3xl font-bold">{formatRupiah(total)}</p>

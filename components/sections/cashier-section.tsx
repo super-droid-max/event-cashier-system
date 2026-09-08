@@ -65,7 +65,8 @@ export function CashierSection() {
               <button
                 key={p.id}
                 onClick={() => addToCart(p)}
-                className="flex flex-col justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/5"
+                disabled={p.stock <= 0}
+                className="flex flex-col justify-between gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="line-clamp-3 text-sm font-medium leading-snug text-card-foreground">

@@ -194,22 +194,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addToCart: (product) =>
       setCart((prev) => {
         const existing = prev.find((i) => i.productId === product.id)
-        if (existing) {
-          return prev.map((i) =>
-            i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i,
-          )
-        }
-        return [
-          ...prev,
-          { productId: product.id, name: product.name, quantity: 1, price: product.price },
-        ]
+        const requested = (existing?.quantity ?? 0) + 1
+        if (product.stock <= 0 || requested > product.stock) return prev
+        if (existing) return prev.map((i) => i.productId === product.id ? { ...i, quantity: requested } : i)
+        return [...prev, { productId: product.id, name: product.name, quantity: 1, price: product.price }]
       }),
     setQuantity: (productId, quantity) =>
-      setCart((prev) =>
-        quantity <= 0
-          ? prev.filter((i) => i.productId !== productId)
-          : prev.map((i) => (i.productId === productId ? { ...i, quantity } : i)),
-      ),
+      setCart((prev) => {
+        const product = products.find((p) => p.id === productId)
+        if (quantity <= 0) return prev.filter((i) => i.productId !== productId)
+        if (!product || quantity > product.stock) return prev
+        return prev.map((i) => (i.productId === productId ? { ...i, quantity } : i))
+      }),
     setItemPrice: (productId, price) =>
       setCart((prev) =>
         prev.map((i) => (i.productId === productId ? { ...i, price: Math.max(0, price) } : i)),
@@ -223,6 +219,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setActivePromotion: (id) => setActivePromotionId(id),
 
     checkout: (input) => {
+      if (cart.length === 0) throw new Error("Keranjang kosong.")
+      for (const item of cart) {
+        const product = products.find((p) => p.id === item.productId)
+        if (!product) throw new Error(`Produk ${item.name} tidak ditemukan.`)
+        if (product.stock <= 0 || item.quantity > product.stock) {
+          throw new Error(`Stok ${item.name} tidak mencukupi. Stok tersedia: ${product.stock}.`)
+        }
+      }
       const now = new Date()
       const items: TransactionItem[] = cart.map((i) => ({
         productId: i.productId,
@@ -252,7 +256,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setProducts((prev) =>
         prev.map((p) => {
           const sold = items.find((i) => i.productId === p.id)
-          return sold ? { ...p, stock: Math.max(0, p.stock - sold.quantity) } : p
+          return sold ? { ...p, stock: p.stock - sold.quantity } : p
         }),
       )
       setCart([])
