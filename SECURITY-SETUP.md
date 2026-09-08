@@ -10,8 +10,8 @@
 Copy `.env.example` to `.env.local` and set strong unique values:
 
 - `AUTH_SECRET`: long random secret (at least 32 characters recommended)
-- `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-- `CASHIER_USERNAME`, `CASHIER_PASSWORD`
+- `Admin`, `super88`
+- `Kasir`, `supersuper88`
 
 ## HTTPS
 When deployed to Vercel, use the HTTPS deployment URL. Vercel provides HTTPS/TLS automatically for deployed domains. For a custom domain, configure it in the Vercel project and use the HTTPS URL.
