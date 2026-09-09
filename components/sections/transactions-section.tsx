@@ -46,6 +46,7 @@ export function TransactionsSection() {
       "Subtotal": t.subtotal,
       "Diskon": t.discount,
       "Promo": t.promotionName ?? "",
+      "Free Gift": t.giftName ? `${t.giftName} x${t.giftQty}` : "",
       "Total": t.total,
       "Metode Pembayaran": t.paymentMethod,
       "Uang Diterima": t.amountReceived ?? "",
@@ -71,7 +72,7 @@ export function TransactionsSection() {
 
     historySheet["!cols"] = [
       { wch: 24 }, { wch: 20 }, { wch: 45 }, { wch: 12 }, { wch: 15 },
-      { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
+      { wch: 15 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
     ]
     detailSheet["!cols"] = [
       { wch: 24 }, { wch: 20 }, { wch: 18 }, { wch: 40 }, { wch: 10 },
@@ -280,6 +281,12 @@ export function TransactionsSection() {
                   <span className="font-mono">− {formatRupiah(detail.discount)}</span>
                 </div>
               ) : null}
+              {detail.giftName ? (
+                <div className="flex justify-between text-primary">
+                  <span>🎁 Free Gift</span>
+                  <span>{detail.giftName} × {detail.giftQty}</span>
+                </div>
+              ) : null}
               <div className="flex justify-between border-t border-border pt-1 font-semibold">
                 <span>Total</span>
                 <span className="font-mono text-primary">{formatRupiah(detail.total)}</span>
@@ -325,3 +332,4 @@ export function TransactionsSection() {
     </div>
   )
 }
+
