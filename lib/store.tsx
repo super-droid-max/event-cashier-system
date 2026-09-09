@@ -135,10 +135,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   )
 
   const appliedPromotion = useMemo(() => {
-    const promo = promotions.find((p) => p.id === activePromotionId && p.active)
-    if (!promo) return null
-    if (subtotal < promo.minSubtotal) return null
-    return promo
+    // If the cashier explicitly selected a promo, use it when eligible.
+    const selected = promotions.find((p) => p.id === activePromotionId && p.active)
+    if (selected && subtotal >= selected.minSubtotal) {
+      if (selected.type !== "gift" || (selected.giftStock ?? 0) > 0) return selected
+    }
+
+    // Otherwise automatically use the highest eligible threshold. This makes
+    // "belanja sekian dapat hadiah" work without manual selection.
+    const eligible = promotions.filter((p) => {
+      if (!p.active || subtotal < p.minSubtotal) return false
+      if (p.type === "gift" && (p.giftStock ?? 0) <= 0) return false
+      return true
+    })
+    if (eligible.length === 0) return null
+    return [...eligible].sort((a, b) => b.minSubtotal - a.minSubtotal)[0]
   }, [promotions, activePromotionId, subtotal])
 
   const discount = useMemo(() => {
@@ -151,6 +162,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [appliedPromotion, subtotal])
 
   const total = Math.max(0, subtotal - discount)
+  const giftName = appliedPromotion?.type === "gift" ? appliedPromotion.giftName?.trim() || null : null
+  const giftQty = giftName ? Math.max(1, appliedPromotion?.giftQty || 1) : 0
 
   const value: StoreValue = {
     ready,
@@ -235,6 +248,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         price: i.price,
         lineTotal: i.price * i.quantity,
       }))
+      if (appliedPromotion?.type === "gift") {
+        const stock = appliedPromotion.giftStock ?? 0
+        if (stock < giftQty) {
+          throw new Error(`Stok hadiah ${appliedPromotion.giftName || "promo"} tidak mencukupi.`)
+        }
+      }
+
       const tx: Transaction = {
         id: nextTransactionNumber(transactions, now),
         createdAt: now.toISOString(),
@@ -242,6 +262,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         subtotal,
         discount,
         promotionName: appliedPromotion?.name ?? null,
+        giftName,
+        giftQty,
         total,
         paymentMethod: input.paymentMethod,
         amountReceived: input.amountReceived,
@@ -277,6 +299,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }),
       )
       setTransactions((prev) => prev.filter((t) => t.id !== id))
+      if (transaction.giftName && transaction.giftQty > 0) {
+        setPromotions((prev) =>
+          prev.map((p) =>
+            p.type === "gift" && p.giftName?.trim() === transaction.giftName?.trim()
+              ? { ...p, giftStock: (p.giftStock ?? 0) + transaction.giftQty }
+              : p,
+          ),
+        )
+      }
     },
     clearTransactions: () => setTransactions([]),
   }
