@@ -36,6 +36,10 @@ export function printReceipt(transaction: Transaction) {
     ? `<div class="row"><span>Diskon${transaction.promotionName ? ` (${escapeHtml(transaction.promotionName)})` : ""}</span><span>- ${formatRupiah(transaction.discount)}</span></div>`
     : ""
 
+  const giftHtml = transaction.giftName
+    ? `<div class="row"><span>🎁 Free Gift</span><span>${escapeHtml(transaction.giftName)} x${transaction.giftQty}</span></div>`
+    : ""
+
   const paymentHtml = transaction.paymentMethod === "CASH"
     ? `
       <div class="row"><span>Diterima</span><span>${formatRupiah(transaction.amountReceived ?? 0)}</span></div>
@@ -66,8 +70,8 @@ export function printReceipt(transaction: Transaction) {
 </head>
 <body>
   <div class="center">
-    <div class="title">KASIR</div>
-    <div class="muted">Event</div>
+    <div class="title">KASIR GATHERING</div>
+    <div class="muted">POS Event</div>
     <div class="muted">${escapeHtml(transaction.id)}</div>
     <div class="muted">${escapeHtml(formatDateTime(transaction.createdAt))}</div>
   </div>
@@ -76,6 +80,7 @@ export function printReceipt(transaction: Transaction) {
   <div class="sep"></div>
   <div class="row"><span>Subtotal</span><span>${formatRupiah(transaction.subtotal)}</span></div>
   ${promotionHtml}
+  ${giftHtml}
   <div class="row total"><span>TOTAL</span><span>${formatRupiah(transaction.total)}</span></div>
   <div class="sep"></div>
   <div class="row"><span>Metode</span><span>${transaction.paymentMethod}</span></div>
@@ -89,3 +94,4 @@ export function printReceipt(transaction: Transaction) {
     printWindow.print()
   }, 300)
 }
+
