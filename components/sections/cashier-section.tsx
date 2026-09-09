@@ -207,7 +207,11 @@ export function CashierSection() {
                 {usablePromos.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
-                    {p.type === "percent" ? ` (${p.value}%)` : ` (${formatRupiah(p.value)})`}
+                    {p.type === "gift"
+                      ? ` (🎁 ${p.giftName ?? "Hadiah"} × ${p.giftQty ?? 1})`
+                      : p.type === "percent"
+                        ? ` (${p.value}%)`
+                        : ` (${formatRupiah(p.value)})`}
                   </option>
                 ))}
               </select>
@@ -228,6 +232,11 @@ export function CashierSection() {
               <div className="flex justify-between text-primary">
                 <span>Diskon{appliedPromotion ? ` · ${appliedPromotion.name}` : ""}</span>
                 <span className="font-mono">− {formatRupiah(discount)}</span>
+              </div>
+            ) : null}
+            {appliedPromotion?.type === "gift" ? (
+              <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
+                🎁 <span className="font-semibold">Free Gift:</span> {appliedPromotion.giftName} × {appliedPromotion.giftQty ?? 1}
               </div>
             ) : null}
             <div className="flex items-center justify-between border-t border-border pt-2">
