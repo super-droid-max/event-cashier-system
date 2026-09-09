@@ -5,13 +5,20 @@ export type Product = {
   price: number
 }
 
+export type PromotionType = "percent" | "amount" | "gift"
+
 export type Promotion = {
   id: string
   name: string
-  type: "percent" | "amount"
+  type: PromotionType
   value: number
   minSubtotal: number
   active: boolean
+  /** Used when type === "gift". */
+  giftName?: string
+  giftQty?: number
+  /** Remaining free-gift stock for this promotion. */
+  giftStock?: number
 }
 
 export type CartItem = {
@@ -39,6 +46,8 @@ export type Transaction = {
   subtotal: number
   discount: number
   promotionName: string | null
+  giftName: string | null
+  giftQty: number
   total: number
   paymentMethod: PaymentMethod
   amountReceived: number | null
